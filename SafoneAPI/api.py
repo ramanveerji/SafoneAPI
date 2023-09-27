@@ -330,8 +330,8 @@ class SafoneAPI:
 
         """
         if nsfw:
-            return await self._fetch("anime/nsfw/" + type)
-        return await self._fetch("anime/sfw/" + type)
+            return await self._fetch(f"anime/nsfw/{type}")
+        return await self._fetch(f"anime/sfw/{type}")
 
     async def xda(self, query: str, limit: int = 10):
         """
@@ -370,7 +370,7 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        return await self._fetch("morse/" + type, text=text)
+        return await self._fetch(f"morse/{type}", text=text)
 
     async def udemy(self, type: str, page: int = 1, limit: int = 10):
         """
@@ -384,7 +384,7 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        return await self._fetch("udemy/" + type, page=page, limit=limit)
+        return await self._fetch(f"udemy/{type}", page=page, limit=limit)
 
     async def ubuntu(self, query: str, limit: int = 10):
         """
@@ -750,11 +750,12 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        if not file and not url:
-            raise InvalidRequest("Please provide a file path or URL")
-
         if not file:
-            return await self._fetch("nsfw", image=url)
+            if url:
+                return await self._fetch("nsfw", image=url)
+
+            else:
+                raise InvalidRequest("Please provide a file path or URL")
 
         async with aiofiles.open(file, mode="rb") as f:
             file = await f.read()
@@ -771,11 +772,12 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        if not file and not url:
-            raise InvalidRequest("Please provide a file path or URL")
-
         if not file:
-            return await self._fetch("ocr", image=url)
+            if url:
+                return await self._fetch("ocr", image=url)
+
+            else:
+                raise InvalidRequest("Please provide a file path or URL")
 
         async with aiofiles.open(file, mode="rb") as f:
             file = await f.read()
@@ -792,11 +794,12 @@ class SafoneAPI:
                         Result object (BytesIO): Results which you can access with filename
 
         """
-        if not file and not url:
-            raise InvalidRequest("Please provide a file path or URL")
-
         if not file:
-            return await self._fetch("removebg", image=url)
+            if url:
+                return await self._fetch("removebg", image=url)
+
+            else:
+                raise InvalidRequest("Please provide a file path or URL")
 
         async with aiofiles.open(file, mode="rb") as f:
             file = await f.read()
@@ -814,7 +817,7 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        return await self._fetch("proxy/" + type, country=country, limit=limit)
+        return await self._fetch(f"proxy/{type}", country=country, limit=limit)
 
     async def tmdb(self, query: str = "", limit: int = 10, tmdb_id: int = 0):
         """
@@ -828,10 +831,10 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        if not query and not tmdb_id:
+        if query or tmdb_id:
+            return await self._fetch("tmdb", query=query, limit=limit, tmdb_id=tmdb_id)
+        else:
             raise InvalidRequest("Please provide a query or TMDb ID")
-
-        return await self._fetch("tmdb", query=query, limit=limit, tmdb_id=tmdb_id)
 
     async def quotly(self, messages: List[Message]):
         """
@@ -1208,7 +1211,7 @@ class SafoneAPI:
 
         """
         if not url.startswith("http"):
-            url = "http://" + url
+            url = f"http://{url}"
 
         json = dict(
                 url=url,
@@ -1309,10 +1312,10 @@ class SafoneAPI:
                         Result object (str): Results which you can access with dot notation
 
         """
-        if not file and not title:
-            raise InvalidRequest("Please provide a file path or title")
-
         if not file:
+            if not title:
+                raise InvalidRequest("Please provide a file path or title")
+
             json = dict(
                 title=title,
                 content=content,
